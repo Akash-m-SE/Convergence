@@ -1,0 +1,5 @@
+/convergence-frontend/node_modules/
+/convergence-backend/node_modules/
+/node_modules/
+
+.env

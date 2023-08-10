@@ -1,0 +1,28 @@
+const serverStore = require("../serverStore");
+const roomsUpdate = require("./updates/rooms");
+
+const roomLeaveHandler = (socket, data) => {
+  const { roomId } = data;
+
+  //   checking if the user is still active (havent closed the tab)
+  const activeRoom = serverStore.getActiveRoom(roomId);
+
+  if (activeRoom) {
+    serverStore.leaveActiveRoom(roomId, socket.id);
+
+    // checking if the room is still active, since if the leaver is last one to leave then we close the room itself
+    const updatedActiveRoom = serverStore.getActiveRoom(roomId);
+
+    if (updatedActiveRoom) {
+      updatedActiveRoom.participants.forEach((participant) => {
+        socket.to(participant.socketId).emit("room-participant-left", {
+          connUserSocketId: socket.id,
+        });
+      });
+    }
+
+    roomsUpdate.updateRooms();
+  }
+};
+
+module.exports = roomLeaveHandler;
